@@ -1,6 +1,5 @@
 package VIEW;
 
-
 import DTO.UsuarioDTO;
 import DTO.PedidosDTO;
 import DTO.CadastroDTO;
@@ -37,7 +36,7 @@ public class Galeto {
     public void opcaoMenuInicial() {
         switch(usuariodto.setOpcao("> ESCOLHA UMA OPÇÃO: ")) {
             case 1: menuAdministracao(); break;
-            case 2: menuPedidos(); break;
+            //case 2: menuPedidos(); break;
             case 3: login(); break;
             case 4: System.out.println("Sessão finalizada."); break;
             default: System.out.println("> ERRO: Opção inválida."); opcaoMenuInicial();
@@ -107,7 +106,17 @@ public class Galeto {
         System.out.print("\n> CPF: ");
         String cpf = entrada.next();
         cadastrodto.setCpfFuncionario(cpf);
-        criarSenha();
+        System.out.print("\n> FUNÇÃO: ");
+        String setor = entrada.next();
+        cadastrodto.setSetorFuncionario(setor);
+        cadastrodao.cadastrarFuncionarioDAO(cadastrodto);
+        if (cadastrodto.getSetorFuncionario().equals("caixa")) {
+            criarSenha();
+        } else {
+            System.out.println("\n> Cadastro efetuado.");
+            menuAdministracao();
+        }
+        
     }
 
     void criarSenha() {
@@ -119,7 +128,7 @@ public class Galeto {
             cadastrodto.setSenhaFuncionario(senha);
             int id = gerador.nextInt(8999999) + 1000000;
             cadastrodto.setIdFuncionario(id);
-            cadastrodao.cadastrarFuncionarioDAO(cadastrodto);
+            cadastrodao.cadastrarLoginDAO(cadastrodto);
             System.out.println("\n> Cadastro efetuado.");
             menuAdministracao();
         } else {
@@ -138,7 +147,7 @@ public class Galeto {
     }
 
     
-    void menuPedidos(){
+    /*void menuPedidos(){
         System.out.println("\n|.....................[ MENU DE PEDIDOS ].....................|");
         System.out.println("\n               ...............................\n"+
                            "               :  1. CADASTRAR PEDIDO        :\n"+
@@ -285,7 +294,7 @@ public class Galeto {
         }
         usuariodto.setPedidoCompleto(usuariodto.getPedidoCompleto()+usuariodto.getValorTotalPedido());
         return usuariodto.getPedidoCompleto();
-    }
+    }*/
 
     public static void main(String[] args) {
         Galeto teste = new Galeto();

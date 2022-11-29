@@ -2,7 +2,7 @@ package DTO;
 
 public class CadastroDTO {
 
-    private String nomeFuncionario, cpfFuncionario, senhaFuncionario, usuarioLogin, senhaLogin;
+    private String nomeFuncionario, cpfFuncionario, senhaFuncionario, setorFuncionario, usuarioLogin, senhaLogin;
     private int opcaoFuncionario, idFuncionario;
 
     public String getNomeFuncionario() {
@@ -48,5 +48,10 @@ public class CadastroDTO {
     public void setIdFuncionario(int idFuncionario) {
         this.idFuncionario = idFuncionario;
     }
-
+    public String getSetorFuncionario() {
+        return setorFuncionario;
+    }
+    public void setSetorFuncionario(String setorFuncionario) {
+        this.setorFuncionario = setorFuncionario;
+    }
 } 

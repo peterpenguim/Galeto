@@ -14,7 +14,26 @@ public class CadastroDAO {
     PreparedStatement pstm;
     
     public void cadastrarFuncionarioDAO(CadastroDTO cadastrodto) {
-        this.comando = "INSERT INTO login (ID_Funcionario, usuario, senha) VALUES (?, ?, ?)";
+        this.comando = "INSERT INTO tab_funcionarios (CPF_FUNCIONARIO, NOM_FUNCIONARIO, DSC_FUNCAO) VALUES (?, ?, ?)";
+        conexao = new ConexaoDAO().conectaBD();
+
+        try {
+            
+            pstm = conexao.prepareStatement(this.comando);
+            pstm.setString(1, cadastrodto.getCpfFuncionario());
+            pstm.setString(2, cadastrodto.getNomeFuncionario());
+            pstm.setString(3, cadastrodto.getSetorFuncionario());
+
+            pstm.execute();
+            pstm.close();   
+
+        } catch (SQLException erro) {
+            JOptionPane.showMessageDialog(null, "CadastroDAO" + erro);
+        }
+    }
+
+    public void cadastrarLoginDAO(CadastroDTO cadastrodto) {
+        this.comando = "INSERT INTO tab_login (ID_CADASTRO, CPF_FUNCIONARIO, DSC_USUARIO, DSC_SENHA) VALUES (?, ?, ?, ?)";
         conexao = new ConexaoDAO().conectaBD();
 
         try {
@@ -22,7 +41,8 @@ public class CadastroDAO {
             pstm = conexao.prepareStatement(this.comando);
             pstm.setInt(1, cadastrodto.getIdFuncionario());
             pstm.setString(2, cadastrodto.getCpfFuncionario());
-            pstm.setString(3, cadastrodto.getSenhaFuncionario());
+            pstm.setString(3, cadastrodto.getNomeFuncionario());
+            pstm.setString(4, cadastrodto.getSenhaFuncionario());
 
             pstm.execute();
             pstm.close();   
@@ -50,7 +70,7 @@ public class CadastroDAO {
     }
 
     public ResultSet autenticacaoUsuarioDAO(CadastroDTO cadastrodto) {
-        this.comando = "SELECT * FROM login WHERE usuario = ? AND senha = ?";
+        this.comando = "SELECT * FROM tab_login WHERE DSC_USUARIO = ? AND DSC_SENHA = ?";
         conexao = new ConexaoDAO().conectaBD();
 
         try {
