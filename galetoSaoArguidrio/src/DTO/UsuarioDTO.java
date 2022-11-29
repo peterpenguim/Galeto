@@ -5,15 +5,24 @@ import java.util.ArrayList;
 public class UsuarioDTO {
 
     Scanner entrada = new Scanner(System.in);
-    private ArrayList<String> pendentes = new ArrayList<String>();
+    private int opcao;
+
+    public int getOpcao() {
+        return opcao;
+    }
+    public int setOpcao(String texto) {
+        System.out.print(texto);
+        this.opcao = entrada.nextInt();
+        return this.opcao;
+    }
+   /* private ArrayList<String> pendentes = new ArrayList<String>();
     private ArrayList<String> pedido = new ArrayList<String>();
     private ArrayList<String> numerosPedidos = new ArrayList<String>();
     private ArrayList<Double> valoresPedido = new ArrayList<Double>();
     private Double[] valores = {24.00, 30.00, 15.00, 20.00, 15.00, 6.00, 7.50};
     private String[] produtos = {"GALETO","CHURRASCO BOI","COMERCIAL GALETO","COMERCIAL BOI","FRITAS","PÃO DE ALHO","GUARANÁ JESUS"};
     private double valorTotalPedido = 0, valorProduto;
-    private int index, opcao, quantidade;
-    private String password, user, modo, numeroPedido, pedidoCompleto = "";
+    private String password, user, numeroPedido, pedidoCompleto = "";
 
 
     public double getValorTotalPedido() {
@@ -33,14 +42,6 @@ public class UsuarioDTO {
     }
     public void setIndex(int index) {
         this.index = index;
-    }
-    public int getOpcao() {
-        return opcao;
-    }
-    public int setOpcao(String texto) {
-        System.out.print(texto);
-        this.opcao = entrada.nextInt();
-        return this.opcao;
     }
     public int getQuantidade() {
         return quantidade;
@@ -111,4 +112,6 @@ public class UsuarioDTO {
     public String getProdutos(int indice) {
         return produtos[indice];
     }
+
+    */
 }

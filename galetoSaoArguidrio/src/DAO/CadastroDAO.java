@@ -12,7 +12,7 @@ public class CadastroDAO {
     private String comando;
     Connection conexao;
     PreparedStatement pstm;
-    
+
     public void cadastrarFuncionarioDAO(CadastroDTO cadastrodto) {
         this.comando = "INSERT INTO tab_funcionarios (CPF_FUNCIONARIO, NOM_FUNCIONARIO, DSC_FUNCAO) VALUES (?, ?, ?)";
         conexao = new ConexaoDAO().conectaBD();
@@ -87,5 +87,4 @@ public class CadastroDAO {
             return null;
         }
     }
-
 }
