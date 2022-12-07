@@ -1,7 +1,6 @@
 package DAO;
 
 import java.sql.Connection;
-import javax.swing.JOptionPane;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,7 +13,7 @@ public class CadastroDAO {
     PreparedStatement pstm;
 
     public void cadastrarFuncionarioDAO(CadastroDTO cadastrodto) {
-        this.comando = "INSERT INTO tab_funcionarios (CPF_FUNCIONARIO, NOM_FUNCIONARIO, DSC_FUNCAO) VALUES (?, ?, ?)";
+        this.comando = "INSERT INTO tab_funcionarios (CPF_FUNCIONARIO, NOM_FUNCIONARIO, DSC_SETOR) VALUES (?, ?, ?)";
         conexao = new ConexaoDAO().conectaBD();
 
         try {
@@ -28,7 +27,7 @@ public class CadastroDAO {
             pstm.close();   
 
         } catch (SQLException erro) {
-            JOptionPane.showMessageDialog(null, "CadastroDAO" + erro);
+            System.out.println(erro);
         }
     }
 
@@ -48,24 +47,41 @@ public class CadastroDAO {
             pstm.close();   
 
         } catch (SQLException erro) {
-            JOptionPane.showMessageDialog(null, "CadastroDAO" + erro);
+            System.out.println(erro);
         }
     }
 
     public void removerFuncionarioDAO(CadastroDTO cadastrodto) {
-        this.comando = "DELETE FROM login WHERE ID_Funcionario = ?";
+        this.comando = "DELETE FROM tab_funcionarios WHERE CPF_FUNCIONARIO = ?";
         conexao = new ConexaoDAO().conectaBD();
 
         try {
             
             pstm = conexao.prepareStatement(this.comando);
-            pstm.setInt(1, cadastrodto.getIdFuncionario());
+            pstm.setString(1, cadastrodto.getCpfFuncionario());
 
             pstm.execute();
             pstm.close();
 
         } catch (SQLException erro) {
-            JOptionPane.showMessageDialog(null, "CadastroDAO" + erro);
+            System.out.println(erro);
+        }
+    }
+
+    public void removerLoginDAO(CadastroDTO cadastrodto) {
+        this.comando = "DELETE FROM tab_login WHERE CPF_FUNCIONARIO = ?";
+        conexao = new ConexaoDAO().conectaBD();
+
+        try {
+            
+            pstm = conexao.prepareStatement(this.comando);
+            pstm.setString(1, cadastrodto.getCpfFuncionario());
+
+            pstm.execute();
+            pstm.close();
+
+        } catch (SQLException erro) {
+            System.out.println(erro);
         }
     }
 
@@ -83,8 +99,44 @@ public class CadastroDAO {
             return rs;
 
         } catch (SQLException erro) {
-            JOptionPane.showMessageDialog(null, "CadastroDAO: " + erro);
+            System.out.println(erro);
             return null;
         }
     }
+
+    public ResultSet visualizarFuncionariosDAO(CadastroDTO cadastrodto) {
+        this.comando = "SELECT * FROM tab_funcionarios WHERE CPF_FUNCIONARIO != 99999999999";
+        conexao = new ConexaoDAO().conectaBD();
+
+        try {
+
+            pstm = conexao.prepareStatement(this.comando);
+
+            ResultSet rs = pstm.executeQuery();
+            return rs;
+
+        } catch (SQLException erro) {
+            System.out.println(erro);
+            return null;
+        }
+    }
+
+    public ResultSet verificaCpfDAO(CadastroDTO cadastrodto) {
+        this.comando = "SELECT * FROM tab_funcionarios WHERE CPF_FUNCIONARIO = ?";
+        conexao = new ConexaoDAO().conectaBD();
+
+        try {
+
+            pstm = conexao.prepareStatement(this.comando);
+            pstm.setString(1, cadastrodto.getCpfFuncionario());
+
+            ResultSet rs = pstm.executeQuery();
+            return rs;
+
+        } catch (SQLException erro) {
+            System.out.println(erro);
+            return null;
+        }
+    }
+
 }

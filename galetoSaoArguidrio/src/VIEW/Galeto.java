@@ -7,7 +7,6 @@ import DAO.CadastroDAO;
 import DAO.PedidosDAO;
 
 import java.util.Scanner;
-import javax.swing.JOptionPane;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
@@ -38,7 +37,14 @@ public class Galeto {
     public void opcaoMenuInicial() {
         switch(usuariodto.setOpcao("> ESCOLHA UMA OPÇÃO: ")) {
             case 1: menuAdministracao(); break;
-            //case 2: menuPedidos(); break;
+            case 2: 
+                if (usuariodto.getStatusCaixa() <= 0) {
+                    System.out.println("\n>> ERRO: O caixa está fechado. <<");
+                    menuInicial(cadastrodto.getUsuarioLogin()); break;
+                } else {
+                    menuPedidos(); 
+                    break;
+                }
             case 3: login(); break;
             case 4: System.out.println("Sessão finalizada."); break;
             default: System.out.println("> ERRO: Opção inválida."); opcaoMenuInicial();
@@ -66,41 +72,56 @@ public class Galeto {
                 login();
             }
         } catch (SQLException erro) {
-            JOptionPane.showMessageDialog(null, "Galeto" + erro);
+            System.out.println(erro);
         }
     }
 
 
-    void menuAdministracao() {
+    public void menuAdministracao() {
         System.out.println("\n|......................[ ADMINISTRAÇÃO ]......................|");
         System.out.println("\n               ...............................\n"+
-                           "               :  1. CADASTRAR FUNCIONÁRIO   :\n"+
-                           "               :  2. REMOVER FUNCIONÁRIO     :\n"+
-                           "               :  3. ABRIR CAIXA             :\n"+
-                           "               :  4. FECHAR CAIXA            :\n"+
+                           "               :  1. ABRIR CAIXA             :\n"+
+                           "               :  2. ENCERRAR CAIXA          :\n"+
+                           "               :  3. CADASTRAR FUNCIONÁRIO   :\n"+
+                           "               :  4. REMOVER FUNCIONÁRIO     :\n"+
                            "               :  5. MENU INICIAL            :\n"+
                            "               :.............................:\n");
         opcaoMenuAdministracao();
     }
 
-    void opcaoMenuAdministracao() {
+    public void opcaoMenuAdministracao() {
         if(cadastrodto.getUsuarioLogin().equals("admin")) {
             switch(usuariodto.setOpcao("> ESCOLHA UMA OPÇÃO: ")) {
-                case 1: cadastrarFuncionario(); break;
-                case 2: removerFuncionario(); break;
-                case 3:break;
-                case 4:break;
-                case 5:menuInicial(cadastrodto.getUsuarioLogin());break;
+                case 1: abrirCaixa(); break;
+                case 2: encerrarCaixa(); break;
+                case 3: cadastrarFuncionario(); break;
+                case 4: removerFuncionario(); break;
+                case 5: menuInicial(cadastrodto.getUsuarioLogin());break;
                 default:System.out.println("> ERRO: Opção inválida.");opcaoMenuAdministracao();
             }
 
         } else {
-            System.out.println("> ERRO: Não possui permissão de acesso.");
+            System.out.println(">> ERRO: Não possui permissão de acesso. <<");
             menuInicial(cadastrodto.getUsuarioLogin());
         }
     }
 
-    void cadastrarFuncionario() {
+    public void abrirCaixa() {
+        if (usuariodto.getStatusCaixa() > 0) {
+            System.out.println("\n>> ERRO: Caixa já aberto. <<");
+            menuAdministracao();
+        } else {
+            usuariodto.setStatusCaixa(1);
+            System.out.println("\n> CAIXA ABERTO.");
+            menuInicial(cadastrodto.getUsuarioLogin());
+        }
+    }
+
+    public void encerrarCaixa() {
+
+    }
+
+    public void cadastrarFuncionario() {
         System.out.println("\n|................[ CADASTRO DE FUNCIONÁRIO ]................|");
         System.out.print("\n> PRIMEIRO NOME: ");
         String nome = entrada.next();
@@ -108,11 +129,9 @@ public class Galeto {
         System.out.print("\n> CPF: ");
         String cpf = entrada.next();
         cadastrodto.setCpfFuncionario(cpf);
-        System.out.print("\n> FUNÇÃO: ");
-        String setor = entrada.next();
-        cadastrodto.setSetorFuncionario(setor);
+        escolherFuncao();
         cadastrodao.cadastrarFuncionarioDAO(cadastrodto);
-        if (cadastrodto.getSetorFuncionario().equals("caixa")) {
+        if (cadastrodto.getSetorFuncionario().equals("CAIXA")) {
             criarSenha();
         } else {
             System.out.println("\n> Cadastro efetuado.");
@@ -121,7 +140,19 @@ public class Galeto {
         
     }
 
-    void criarSenha() {
+    public void escolherFuncao() {
+        System.out.println("\n1. CAIXA\n"+"2. COZINHA\n"+"3. DELIVERY");
+        System.out.print("\n> INFORME O SETOR: ");
+        int setor = entrada.nextInt();
+        switch(setor) {
+            case 1: cadastrodto.setSetorFuncionario("CAIXA"); break;
+            case 2: cadastrodto.setSetorFuncionario("COZINHA"); break;
+            case 3: cadastrodto.setSetorFuncionario("DELIVERY"); break;
+            default: System.out.println("\n>> ERRO: Opção inválida. <<"); escolherFuncao(); break;
+        }
+    }
+
+    public void criarSenha() {
         System.out.print("\n> SENHA DE ACESSO: ");
         String senha = entrada.next();
         System.out.print("\n> CONFIRME A SENHA: ");
@@ -134,22 +165,76 @@ public class Galeto {
             System.out.println("\n> Cadastro efetuado.");
             menuAdministracao();
         } else {
-            System.out.println("> ERRO: Senhas divergentes.");
+            System.out.println(">> ERRO: Senhas divergentes. <<");
             criarSenha();
         }
     }
 
-    void removerFuncionario() {
-        System.out.print("\nINFORME O FUNCIONÁRIO QUE DESEJA REMOVER: ");
-        int opcao = entrada.nextInt();
-        cadastrodto.setIdFuncionario(opcao);
-        cadastrodao.removerFuncionarioDAO(cadastrodto);
-        System.out.println("\n> Funcionário removido.");
-        menuAdministracao();
+    public void removerFuncionario() {
+
+        try {
+
+            verificaFuncionarios();
+            System.out.print("\nINFORME O CPF DO FUNCIONÁRIO QUE DESEJA REMOVER: ");
+            String cpf = entrada.next();
+            cadastrodto.setCpfFuncionario(cpf);
+            ResultSet rscadastrodao = cadastrodao.verificaCpfDAO(cadastrodto);
+            if(rscadastrodao.next()) {
+                String setor = rscadastrodao.getString("DSC_SETOR");
+                if (setor.equals("CAIXA")) {
+                    cadastrodao.removerLoginDAO(cadastrodto);
+                    cadastrodao.removerFuncionarioDAO(cadastrodto);
+                    System.out.println("\n> Funcionário removido.");
+                    menuAdministracao();
+                } else {
+                    cadastrodao.removerFuncionarioDAO(cadastrodto);
+                    System.out.println("\n> Funcionário removido.");
+                    menuAdministracao();
+                }
+            } else {
+                System.out.println("\n>> ERRO: O CPF informado não consta na base de dados. <<");
+                menuAdministracao();
+            }
+
+            
+        } catch (SQLException erro) {
+            System.out.println(erro);
+        }
+    }
+
+    public void visualizarFuncionarios() {
+        System.out.println("\n|......................[ FUNCIONÁRIOS ]......................|");
+        try {
+            ResultSet rscadastrodao = cadastrodao.visualizarFuncionariosDAO(cadastrodto);
+            while(rscadastrodao.next()) {
+                String cpf = rscadastrodao.getString("CPF_FUNCIONARIO");
+                String nome = rscadastrodao.getString("NOM_FUNCIONARIO");
+                String funcao = rscadastrodao.getString("DSC_SETOR");
+                System.out.println("\n>> "+cpf+" | "+nome.toUpperCase()+" | "+funcao.toUpperCase());
+            }
+            
+        } catch (SQLException erro) {
+            System.out.println(erro);
+        }
+    }
+
+    public void verificaFuncionarios() {
+        try {
+            
+            ResultSet rscadastrodao = cadastrodao.visualizarFuncionariosDAO(cadastrodto);
+            if (rscadastrodao.next()) {
+                visualizarFuncionarios();
+            } else {
+                System.out.println("\n> Nenhum cadastro encontrado.");
+                menuAdministracao();
+            }
+        } catch (SQLException erro) {
+            System.out.println(erro);
+        }
     }
 
     
-    void menuPedidos(){
+    public void menuPedidos(){
         System.out.println("\n|.....................[ MENU DE PEDIDOS ].....................|");
         System.out.println("\n               ...............................\n"+
                            "               :  1. CADASTRAR PEDIDO        :\n"+
@@ -161,20 +246,21 @@ public class Galeto {
         opcaoMenuPedidos();
     }
 
-    void opcaoMenuPedidos() {
+    public void opcaoMenuPedidos() {
         switch(usuariodto.setOpcao("> ESCOLHA UMA OPÇÃO: ")) {
             case 1: 
-                pedidosdto.setNumeroPedido(gerador.nextInt(899) + 100); 
+                pedidosdto.setNumeroPedido(gerador.nextInt(899) + 100);
+                pedidosdao.cadastrarPedidoDAO(pedidosdto);
                 cadastrarPedido(); break;
-            //case 2: chamaMetodosPedidos(1, "CANCELAR", "cancelado"); break;
-            //case 3: chamaMetodosPedidos(1, "CONFIRMAR", "confirmado"); break;
-            //case 4: chamaMetodosPedidos(2, null, null); break;
-            //case 5: menuInicial(usuariodto.getModo()); break;
+            case 2: cancelarPedido(); break;
+            case 3: confirmarPedido(); break;
+            case 4: verificaPendentes(); menuPedidos(); break;
+            case 5:menuInicial(cadastrodto.getUsuarioLogin());break;
             default:System.out.println("> ERRO: Opção inválida."); opcaoMenuPedidos();
         }
     }
 
-    void menuProdutos() {
+    public void menuProdutos() {
         System.out.println("\n|........................[ PRODUTOS ].........................|");
         System.out.println("\n              ................................\n"+
                            "              :  1. GALETO            24.00  :\n"+
@@ -193,60 +279,104 @@ public class Galeto {
         System.out.print("\n> SELECIONE O PRODUTO DESEJADO: ");
         int produto = entrada.nextInt();
         pedidosdto.setProdutoEscolhido(pedidosdto.produtos[produto-1]);
+        pedidosdto.setCodProduto(produto);
         System.out.print("\n> INFORME A QUANTIDADE: ");
         int quantidade = entrada.nextInt();
         pedidosdto.setQuantidadeEscolhida(quantidade);
         pedidosdto.setValorItens(quantidade * pedidosdto.valoresUnitarios[produto-1]);
-        pedidosdao.cadastrarItensPedidoDAO(pedidosdto);
+        pedidosdao.cadastrarItensDAO(pedidosdto);
         pedidosdto.setValorPedido(pedidosdto.getValorPedido() + pedidosdto.getValorItens());
-        finalizarOuContinuarPedido();     
+        finalizarOuContinuarPedido();
     }
 
-    void finalizarOuContinuarPedido() {
+    public void finalizarOuContinuarPedido() {
         System.out.println("\n1. CONTINUAR PEDIDO\n"+"2. FINALIZAR PEDIDO");
         switch(usuariodto.setOpcao("\n> ESCOLHA UMA OPÇÃO: ")) {
             case 1: cadastrarPedido(); break;
-            case 2: 
-                pedidosdao.cadastrarPedidoDAO(pedidosdto);
+            case 2:
+                pedidosdao.inserirValorPedidoDAO(pedidosdto); 
                 System.out.println("\n> Pedido cadastrado.");
                 menuPedidos(); break;
             default: System.out.println("\n> ERRO: Opção inválida"); finalizarOuContinuarPedido(); break;
         }
     }
 
-    void confirmarPedido() {
-        pedidosPendentes();
-        System.out.print("\nINFORME O Nº DO PEDIDO QUE DESEJA CONFIRMAR: ");
-        int pedido = entrada.nextInt();
-        pedidosdto.setNumeroPedido(pedido);
-        pedidosdao.confirmarPedidoDAO(pedidosdto);
-        System.out.println("\n> Pedido confirmado.");
-    }
-
-    void cancelarPedido() {
-        pedidosPendentes();
-        System.out.print("\nINFORME O Nº DO PEDIDO QUE DESEJA CANCELAR: ");
-        int pedido = entrada.nextInt();
-        pedidosdto.setNumeroPedido(pedido);
-        pedidosdao.cancelarPedidoDAO(pedidosdto);
-        pedidosdao.cancelarItensPedidoDAO(pedidosdto);
-        System.out.println("\n Pedido cancelado.");
-    }
-
-    void pedidosPendentes() {
+    public void confirmarPedido() {
 
         try {
-            ResultSet rscadastrodao = pedidosdao.pedidosPendentesDAO(pedidosdto);
-            if(rscadastrodao.next()){
-                System.out.println(rscadastrodao);
+            verificaPendentes();
+            System.out.print("\nINFORME O Nº DO PEDIDO QUE DESEJA CONFIRMAR: ");
+            int pedido = entrada.nextInt();
+            pedidosdto.setNumeroPedido(pedido);
+            ResultSet rspedidosdao = pedidosdao.numeroPedidoDAO(pedidosdto);
+            if (rspedidosdao.next()) {
+                pedidosdao.confirmarPedidoDAO(pedidosdto);
+                System.out.println("\n> Pedido confirmado.");
+                menuPedidos();
+            
             } else {
-                System.out.println("\n> ERRO: Não existem pedidos pendentes.");
-                menuAdministracao();
+                System.out.println("\n> Esse pedido não existe.");
+                confirmarPedido();
             }
             
         } catch (SQLException erro) {
-            JOptionPane.showMessageDialog(null, "Galeto" + erro);
+            System.out.println(erro);
         }
+    }
+
+    public void cancelarPedido() {
+
+        try {
+            verificaPendentes();
+            System.out.print("\nINFORME O Nº DO PEDIDO QUE DESEJA CANCELAR: ");
+            int pedido = entrada.nextInt();
+            pedidosdto.setNumeroPedido(pedido);
+            ResultSet rspedidosdao = pedidosdao.numeroPedidoDAO(pedidosdto);
+            if (rspedidosdao.next()) {
+                pedidosdao.cancelarItensDAO(pedidosdto);
+                pedidosdao.cancelarPedidoDAO(pedidosdto);
+                System.out.println("\n Pedido cancelado.");
+                menuPedidos();
+                
+            } else {
+                System.out.println("\n> Esse pedido não existe.");
+                cancelarPedido();
+            }
+            
+        } catch (SQLException erro) {
+            System.out.println(erro);
+        }
+    }
+
+    public void verificaPendentes() {
+        try {
+            ResultSet rspedidosdao = pedidosdao.pedidosPendentesDAO(pedidosdto);
+            if(rspedidosdao.next()){
+                pedidosPendentes();
+            } else {
+                System.out.println("\n> ERRO: Não existem pedidos pendentes.");
+                menuPedidos();
+            }
+            
+        } catch (SQLException erro) {
+            System.out.println(erro);;
+        }
+    }
+
+    public void pedidosPendentes() {
+        System.out.println("\n|......................[ PREPARANDO ]......................|");
+
+        try {
+            ResultSet rspedidosdao = pedidosdao.pedidosPendentesDAO(pedidosdto);
+            while(rspedidosdao.next()) {
+                int numero = rspedidosdao.getInt("NUM_PEDIDO");
+                System.out.println("\n>> Nº "+numero);
+            }
+            
+        } catch (SQLException erro) {
+            System.out.println(erro);
+        }
+
     }
 
     public static void main(String[] args) {
