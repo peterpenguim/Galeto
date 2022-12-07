@@ -6,7 +6,7 @@ public class PedidosDTO {
     private int quantidadeEscolhida, numeroPedido, codProduto;
     private double valorItens, valorPedido;
     public Double[] valoresUnitarios = {24.00, 30.00, 15.00, 20.00, 15.00, 6.00, 7.50};
-    public String[] produtos = {"GALETO","CHURRASCO BOI","COMERCIAL GALETO","COMERCIAL BOI","FRITAS","PÃO DE ALHO","GUARANÁ JESUS"};
+    public String[] produtos = {"GALETO          ","CHURRASCO BOI   ","COMERCIAL GALETO","COMERCIAL BOI   ","FRITAS          ","PÃO DE ALHO     ","GUARANÁ JESUS   "};
 
     public String getProdutoEscolhido() {
         return produtoEscolhido;

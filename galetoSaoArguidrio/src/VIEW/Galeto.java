@@ -2,14 +2,17 @@ package VIEW;
 
 import DTO.UsuarioDTO;
 import DTO.PedidosDTO;
+import DAO.PedidosDAO;
 import DTO.CadastroDTO;
 import DAO.CadastroDAO;
-import DAO.PedidosDAO;
 
 import java.util.Scanner;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class Galeto {
 
@@ -20,11 +23,13 @@ public class Galeto {
     PedidosDAO pedidosdao = new PedidosDAO();
     Random gerador = new Random();
     Scanner entrada = new Scanner(System.in);
+    DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
 
     public void menuInicial(String usuariologin) {
+        LocalDate data = LocalDate.now();
         System.out.println("\n|......................[ MENU INICIAL ].....................|");
-        System.out.println("\n[ "+usuariologin+" ]");
+        System.out.println("\n    [ "+usuariologin+" ]                             [ "+data+" ]");
         System.out.println("\n                 .............................\n"+
                            "                 :  1. ADMINISTRAÇÃO         :\n"+
                            "                 :  2. PEDIDOS               :\n"+
@@ -97,7 +102,7 @@ public class Galeto {
                 case 3: cadastrarFuncionario(); break;
                 case 4: removerFuncionario(); break;
                 case 5: menuInicial(cadastrodto.getUsuarioLogin());break;
-                default:System.out.println("> ERRO: Opção inválida.");opcaoMenuAdministracao();
+                default:System.out.println("\nXXXXXXXXXXXXXXXXXXXXXXXX OPÇÃO INVÁLDA XXXXXXXXXXXXXXXXXXXXXXXX\n");opcaoMenuAdministracao();
             }
 
         } else {
@@ -112,12 +117,18 @@ public class Galeto {
             menuAdministracao();
         } else {
             usuariodto.setStatusCaixa(1);
-            System.out.println("\n> CAIXA ABERTO.");
+            LocalDateTime data = LocalDateTime.now();
+            String dataAbertura = data.format(formatoData);
+            System.out.println("\n[ CAIXA ABERTO EM "+dataAbertura+" ]");
             menuInicial(cadastrodto.getUsuarioLogin());
         }
     }
 
     public void encerrarCaixa() {
+        
+        LocalDateTime data = LocalDateTime.now();
+        String dataFechamento = data.format(formatoData);
+        System.out.println("\n[ CAIXA FECHADO EM "+dataFechamento+" ]");
 
     }
 
@@ -269,7 +280,7 @@ public class Galeto {
                            "              :  4. COMERCIAL BOI     20.00  :\n"+
                            "              :  5. FRITAS            15.00  :\n"+
                            "              :  6. PÃO DE ALHO        6.00  :\n"+
-                           "              :  7. GUARANÁ JESUS 1L   7.50  :\n"+
+                           "              :  7. GUARANÁ JESUS      4.50  :\n"+
                            "              :..............................:\n");
         
     }
@@ -294,31 +305,58 @@ public class Galeto {
         switch(usuariodto.setOpcao("\n> ESCOLHA UMA OPÇÃO: ")) {
             case 1: cadastrarPedido(); break;
             case 2:
-                pedidosdao.inserirValorPedidoDAO(pedidosdto); 
+                pedidosdao.inserirValorPedidoDAO(pedidosdto);
                 System.out.println("\n> Pedido cadastrado.");
+                notaFiscal();
                 menuPedidos(); break;
             default: System.out.println("\n> ERRO: Opção inválida"); finalizarOuContinuarPedido(); break;
         }
     }
 
-    public void confirmarPedido() {
+    public void notaFiscal() {
+        try {
+            System.out.println("\n........................[ NOTA FISCAL ]........................\n"+
+                               ":                                                             :\n"+
+                               ":                     GALETO SÃO ARGUIDRO                     :\n"+
+                               ":                                                             :\n"+
+                               ":                        "+"PEDIDO Nº "+pedidosdto.getNumeroPedido()+"                        :\n"+
+                               ": PRODUTOS                                         QTD    VAL :\n"+
+                               ":                                                             :");
+            ResultSet rspedidosdao = pedidosdao.notaFiscalDAO(pedidosdto);
+            while(rspedidosdao.next()) {
+                String produto = rspedidosdao.getString("DSC_PRODUTO");
+                int qtd = rspedidosdao.getInt("DSC_QUANTIDADE");
+                double valor = rspedidosdao.getDouble("DSC_VALOR");
+                System.out.println(": "+produto+"                                  "+qtd+"    "+valor+" :");
+            }
+            System.out.println(":                                                             :");
+            ResultSet rsvalortotal = pedidosdao.verificaNumeroPedidoDAO(pedidosdto);
+            while(rsvalortotal.next()) {
+                double total = rsvalortotal.getDouble("VAL_TOTAL");
+                System.out.println(": TOTAL                                                 "+total+" :");
+            }
+            System.out.println(":.............................................................:");
 
+        } catch (SQLException erro) {
+            System.out.println(erro);
+        }
+    }
+
+    public void confirmarPedido() {
         try {
             verificaPendentes();
             System.out.print("\nINFORME O Nº DO PEDIDO QUE DESEJA CONFIRMAR: ");
             int pedido = entrada.nextInt();
             pedidosdto.setNumeroPedido(pedido);
-            ResultSet rspedidosdao = pedidosdao.numeroPedidoDAO(pedidosdto);
+            ResultSet rspedidosdao = pedidosdao.verificaNumeroPedidoDAO(pedidosdto);
             if (rspedidosdao.next()) {
                 pedidosdao.confirmarPedidoDAO(pedidosdto);
                 System.out.println("\n> Pedido confirmado.");
                 menuPedidos();
-            
             } else {
                 System.out.println("\n> Esse pedido não existe.");
                 confirmarPedido();
             }
-            
         } catch (SQLException erro) {
             System.out.println(erro);
         }
@@ -331,7 +369,7 @@ public class Galeto {
             System.out.print("\nINFORME O Nº DO PEDIDO QUE DESEJA CANCELAR: ");
             int pedido = entrada.nextInt();
             pedidosdto.setNumeroPedido(pedido);
-            ResultSet rspedidosdao = pedidosdao.numeroPedidoDAO(pedidosdto);
+            ResultSet rspedidosdao = pedidosdao.verificaNumeroPedidoDAO(pedidosdto);
             if (rspedidosdao.next()) {
                 pedidosdao.cancelarItensDAO(pedidosdto);
                 pedidosdao.cancelarPedidoDAO(pedidosdto);
@@ -359,12 +397,12 @@ public class Galeto {
             }
             
         } catch (SQLException erro) {
-            System.out.println(erro);;
+            System.out.println(erro);
         }
     }
 
     public void pedidosPendentes() {
-        System.out.println("\n|......................[ PREPARANDO ]......................|");
+        System.out.println("\n|........................[ PENDENTES ]........................|");
 
         try {
             ResultSet rspedidosdao = pedidosdao.pedidosPendentesDAO(pedidosdto);

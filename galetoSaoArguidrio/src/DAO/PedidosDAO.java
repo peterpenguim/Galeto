@@ -139,8 +139,26 @@ public class PedidosDAO {
         }
     }
 
-    public ResultSet numeroPedidoDAO(PedidosDTO pedidosdto) {
+    public ResultSet verificaNumeroPedidoDAO(PedidosDTO pedidosdto) {
         this.comando = "SELECT * FROM tab_pedidos WHERE NUM_PEDIDO = ?";
+        conexao = new ConexaoDAO().conectaBD();
+
+        try {
+
+            pstm = conexao.prepareStatement(this.comando);
+            pstm.setInt(1, pedidosdto.getNumeroPedido());
+
+            ResultSet rs = pstm.executeQuery();
+            return rs;
+
+        } catch (SQLException erro) {
+            System.out.println(erro);
+            return null;
+        }
+    }
+
+    public ResultSet notaFiscalDAO(PedidosDTO pedidosdto) {
+        this.comando = "SELECT * FROM tab_itens WHERE NUM_PEDIDO = ?";
         conexao = new ConexaoDAO().conectaBD();
 
         try {
