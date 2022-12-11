@@ -1,4 +1,4 @@
-# BRANCH PRINCIPAL, NÃO MEXER.
+# BRANCH PRINCIPAL, NÃO MEXER. :)
 
 # Divisão em camadas [x]
 # Banco de dados [x]
